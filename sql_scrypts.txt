@@ -1,0 +1,72 @@
+CREATE DATABASE [notes_manager]
+ CONTAINMENT = NONE
+ ON  PRIMARY 
+( NAME = N'notes_manager', FILENAME = N'C:\notes_manager.mdf' , SIZE = 8192KB , MAXSIZE = UNLIMITED, FILEGROWTH = 65536KB )
+ LOG ON 
+( NAME = N'notes_manager_log', FILENAME = N'C:\notes_manager_log.ldf' , SIZE = 8192KB , MAXSIZE = 2048GB , FILEGROWTH = 65536KB )
+GO
+
+CREATE TABLE [dbo].[Notes](
+	[id] [int] IDENTITY(1,1) NOT NULL,
+	[head] [nchar](50) NOT NULL,
+	[content] [nvarchar](max) NULL,
+	[date] [date] NOT NULL
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+
+CREATE PROCEDURE [dbo].[sp_GetNotes]
+AS
+BEGIN
+    Select * FROM [dbo].[Notes]
+END
+GO
+
+CREATE PROCEDURE [dbo].[sp_GetNote]
+    @Id [int]
+AS
+BEGIN
+    Select * FROM [dbo].[Notes]
+    Where [Id] = @Id
+END
+GO
+
+CREATE PROCEDURE [dbo].[sp_InsertNote]
+    @Head [nchar](50),
+    @Content [nvarchar](max),
+    @Date [date]
+AS
+BEGIN
+    INSERT [dbo].[Notes]([Head], [Content], [Date])  
+    VALUES (@Head, @Content, @Date)  
+      
+    DECLARE @id int  
+    SELECT @id = [id]  
+    FROM [dbo].[Notes]  
+    WHERE @@ROWCOUNT > 0 AND [id] = scope_identity()  
+      
+    SELECT t0.[id]  
+    FROM [dbo].[Notes] AS t0  
+    WHERE @@ROWCOUNT > 0 AND t0.[id] = @id  
+END
+GO
+
+CREATE PROCEDURE [dbo].[sp_UpdateNote]  
+    @Id [int],  
+    @Head [nchar](50),
+    @Content [nvarchar](max),
+    @Date [date]
+AS  
+BEGIN  
+    UPDATE [dbo].[Notes]  
+    SET [Head] = @Head, [Content] = @Content, [Date] = @Date  
+    WHERE [Id] = @Id
+END
+GO
+
+CREATE PROCEDURE [dbo].[sp_DeleteNote]  
+    @Id [int]  
+AS  
+BEGIN  
+    DELETE [dbo].[Notes]
+    WHERE [Id] = @Id
+END
