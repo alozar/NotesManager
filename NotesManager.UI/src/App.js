@@ -1,18 +1,22 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Grid, GridItem, Heading } from '@chakra-ui/react'
 import NoteViewer, { NoteViewerMode } from './components/NoteViewer';
 import NotesList from './components/NotesList';
-import Note from "./models/Note";
-
-const notesDefault = [
-  new Note(1, "Заметка 1", "asdfasdfasdf", new Date().getDate()),
-  new Note(2, "Заметка 2", "werwerwerwerwerwer", new Date().getDate())
-];
+import { notesGet, noteCreate, noteUpdate, noteRemove } from './services/notesService.js';
 
 const App = () => {
-  const [notes, setNotes] = useState(notesDefault);
-  const [noteViewerMode, setNoteViewerMode] = useState(NoteViewerMode.View);
-  const [selectedNote, setSelectedNote] = useState(notes[0]);
+  const [notes, setNotes] = useState([]);
+  const [noteViewerMode, setNoteViewerMode] = useState(NoteViewerMode.Empty);
+  const [selectedNote, setSelectedNote] = useState(null);
+
+  useEffect(() => {
+    notesGet().then(result => {
+      setNotes(result);
+      if (result.length > 0) {
+        noteSelect(result[0]);
+      }
+    });
+  }, []);
 
   const noteSelect = (note) => {
     setSelectedNote(note);
@@ -20,25 +24,38 @@ const App = () => {
   };
 
   const noteAdd = (newNote) => {
-    setNotes(notes => [...notes, newNote]);
-    noteSelect(newNote);
+    noteCreate(newNote).then(id => {
+      newNote.id = id;
+      setNotes(notes => [...notes, newNote]);
+      noteSelect(newNote);
+    });
   };
 
   const noteSave = (changedNote) => {
-    setNotes(notes => notes.map(note => 
-      note.id === changedNote.id?
-      {...changedNote}
-      :
-      {...note}
-      ));
+    noteUpdate(changedNote).then(() => {
+      setNotes(notes => notes.map(note => 
+        note.id === changedNote.id?
+        {...changedNote}
+        :
+        {...note}
+        ));
+    });
   };
 
   const noteDelete = (id) => {
-    setNotes(notes => notes.filter(note => note.id !== id));
-    const notesCount = notes.length;
-    if (notesCount > 0) {
-      setSelectedNote(notes[notesCount-1]);
-    }
+    noteRemove(id).then(() => {
+      setNotes(n => {
+        const newNotes = n.filter(note => note.id !== id);
+        const newNotesCount = newNotes.length;
+        if (newNotesCount > 0) {
+          noteSelect(newNotes[newNotesCount-1]);
+        }
+        else {
+          setNoteViewerMode(NoteViewerMode.Empty)
+        }
+        return newNotes;
+      });
+    });
   };
 
   return (
@@ -47,7 +64,7 @@ const App = () => {
           <NotesList notes={notes} noteSelect={noteSelect} setNoteViewerModeAdd={()=>setNoteViewerMode(NoteViewerMode.Add)} />
         </GridItem>
         <GridItem as='main' colSpan='5' p='10px'>
-          {notes.length ?
+          {notes.length > 0 || noteViewerMode !== NoteViewerMode.Empty ?
             <NoteViewer mode={noteViewerMode} note={selectedNote} noteSave={noteSave} noteDelete={noteDelete} noteAdd={noteAdd} />
             :
             <Heading as='h1'>Заметки отсутсвуют</Heading>

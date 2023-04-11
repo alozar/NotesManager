@@ -33,14 +33,14 @@ public class NotesController : ControllerBase
     }
 
     [HttpPost]
-    public ActionResult<int> Post(Note note)
+    public ActionResult<int> Post([FromBody] Note note)
     {
         var id = _notesService.Create(note);
         return Ok(id);
     }
 
     [HttpPut]
-    public ActionResult Put(Note note)
+    public ActionResult Put([FromBody] Note note)
     {
         _notesService.Update(note);
         return Ok();

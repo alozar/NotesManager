@@ -10,7 +10,7 @@ const NotesList = ({ notes, noteSelect, setNoteViewerModeAdd }) => {
                 <Spacer/>
                 <IconButton onClick={setNoteViewerModeAdd} colorScheme='green' icon={<AddIcon />} />
             </Flex>
-            {notes && notes.map(note => (
+            {notes && notes.length > 0 && notes.map(note => (
                 <NotesListItem key={note.id} note={note} noteSelect={noteSelect} />
             ))}
         </VStack>

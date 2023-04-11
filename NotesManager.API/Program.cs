@@ -16,6 +16,12 @@ public class Program
             app.UseSwaggerUI();
         }
 
+        app.UseCors(builder =>
+            builder
+            .AllowAnyOrigin()
+            .WithMethods("GET", "POST", "PUT", "DELETE")
+            .WithHeaders("accept", "content-type", "origin", "custom-header"));
+
         app.UseHttpsRedirection();
 
         app.MapControllers();
@@ -32,6 +38,9 @@ public class Program
         builder.Services.AddEndpointsApiExplorer();
 
         builder.Services.AddSwaggerGen();
+
+        builder.Services.AddCors();
+
 
         builder.Services.AddTransient<INotesService, NotesService>();
 

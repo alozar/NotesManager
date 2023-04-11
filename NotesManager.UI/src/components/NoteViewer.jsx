@@ -1,10 +1,9 @@
 import { VStack, Flex, Heading, Editable, EditablePreview, EditableInput, Spacer, Textarea, Button, ButtonGroup } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
-import uniqid from 'uniqid';
 
-export const NoteViewerMode = { View: 'View', Add: 'Add'};
+export const NoteViewerMode = { View: 'View', Add: 'Add', Empty: 'Empty'};
 
-const NoteViewer = ({mode = NoteViewerMode.View, note, noteSave, noteDelete, noteAdd}) => {
+const NoteViewer = ({mode = NoteViewerMode.Empty, note, noteSave, noteDelete, noteAdd}) => {
   const [head, setHead] = useState('');
   const [content, setContent] = useState('');
 
@@ -12,7 +11,8 @@ const NoteViewer = ({mode = NoteViewerMode.View, note, noteSave, noteDelete, not
     if(mode === NoteViewerMode.Add) {
       setHead('Новая заметка');
       setContent('');
-    } else {
+    }
+    if(mode === NoteViewerMode.View) {
       setHead(note.head);
       setContent(note.content);
     }
@@ -20,7 +20,6 @@ const NoteViewer = ({mode = NoteViewerMode.View, note, noteSave, noteDelete, not
 
   const add = () => {
     const newNote = {
-      id: uniqid(),
       head: head,
       content: content,
       date: new Date(),
@@ -42,6 +41,10 @@ const NoteViewer = ({mode = NoteViewerMode.View, note, noteSave, noteDelete, not
     noteDelete(note.id);
   };
 
+  if (mode === NoteViewerMode.Empty) {
+    return (<Heading as='h1'>Выберете заметку</Heading>)
+  };
+  
   return (
     <VStack align='stretch'>
       <Flex alignItems='center' py='10px'>
@@ -61,9 +64,7 @@ const NoteViewer = ({mode = NoteViewerMode.View, note, noteSave, noteDelete, not
           <Button onClick={add} colorScheme='green'>Создать</Button>
         }
       </Flex>
-      
       <Textarea value={content} onChange={(e) => setContent(e.target.value)}/>
-      
     </VStack>
   );
 }
